@@ -21,17 +21,19 @@
             margin-bottom: 30px;
         }
         table {
-            width: 100%;
+            width: 100%; /* Use full width for better mobile compatibility */
+            max-width: 100%; /* Ensure table doesn't exceed screen width */
+            margin: 20px auto;
             border-collapse: collapse;
-            margin-top: 20px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             border-radius: 5px;
             overflow: hidden;
         }
         th, td {
             border: 1px solid #ddd;
-            padding: 12px;
+            padding: 8px;
             text-align: center;
+            font-size: 0.9em;
         }
         th {
             background-color: #4CAF50;
@@ -62,11 +64,22 @@
         input[type="file"] {
             margin-bottom: 20px;
         }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            th, td {
+                padding: 6px; /* Reduce padding on smaller screens */
+                font-size: 0.8em; /* Reduce font size on smaller screens */
+            }
+            button {
+                padding: 8px 16px; /* Adjust button padding */
+            }
+        }
     </style>
 </head>
 <body>
-    <h1>M/TSR Name Days Counts</h1>
-    <p class="datetime">Current Date and Time: {{ current_time }}</p>
+    <h1>Tasklist</h1>
+    <p class="datetime">Current Date and Time: {{ current_time }}</p> <!-- This already includes the date -->
     <input type="file" id="fileInput" accept=".xlsx" />
     <button onclick="uploadFile()">Upload File</button>
     <button onclick="window.location.href='/export_csv'">Export to CSV</button>

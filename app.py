@@ -36,6 +36,24 @@ def show_days_counts():
         zero_to_seven_days_data = data[data['Days to no Cooking'] <= 7]
         zero_to_seven_days_counts = zero_to_seven_days_data['M/TSR Name'].value_counts().to_dict()
 
+        # Create a DataFrame from the counts
+        df = pd.DataFrame({
+            'M/TSR Name': zero_days_counts.keys(),
+            '0 Days': zero_days_counts.values(),
+            '0-3 Days': [zero_to_three_days_counts.get(name, 0) for name in zero_days_counts.keys()],
+            '0-5 Days': [zero_to_five_days_counts.get(name, 0) for name in zero_days_counts.keys()],
+            '0-7 Days': [zero_to_seven_days_counts.get(name, 0) for name in zero_days_counts.keys()]
+        })
+
+        # Sort the DataFrame by '0 Days' in descending order
+        df = df.sort_values(by='0 Days', ascending=False)
+
+        # Convert the sorted DataFrame back to dictionaries for rendering
+        zero_days_counts = df.set_index('M/TSR Name')['0 Days'].to_dict()
+        zero_to_three_days_counts = df.set_index('M/TSR Name')['0-3 Days'].to_dict()
+        zero_to_five_days_counts = df.set_index('M/TSR Name')['0-5 Days'].to_dict()
+        zero_to_seven_days_counts = df.set_index('M/TSR Name')['0-7 Days'].to_dict()
+
         return render_template('index.html', 
                                zero_days_counts=zero_days_counts,
                                zero_to_five_days_counts=zero_to_five_days_counts,

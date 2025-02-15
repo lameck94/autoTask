@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Sum App</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f4f4f4; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h2>Upload Excel File</h2>
+    
+    {% if error %}
+        <p class="error">{{ error }}</p>
+    {% endif %}
+    
+    <form action="/" method="post" enctype="multipart/form-data">
+        <input type="file" name="file" accept=".xls,.xlsx" required>
+        <button type="submit">Upload</button>
+    </form>
+    
+    {% if data %}
+        <h2>Processed Data</h2>
+        <table>
+            <tr>
+                <th>M/TSR Name</th>
+                <th>0 Days Customers</th>
+                <th>0-3 Days Customers</th>
+                <th>0-5 Days Customers</th>
+                <th>0-7 Days Customers</th>
+            </tr>
+            {% for row in data.itertuples() %}
+                <tr>
+                    <td>{{ row[1] }}</td>
+                    <td>{{ row[2] }}</td>
+                    <td>{{ row[3] }}</td>
+                    <td>{{ row[4] }}</td>
+                    <td>{{ row[5] }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+        <br>
+        <a href="/download_csv"><button>Download CSV</button></a>
+    {% endif %}
+</body>
+</html>
