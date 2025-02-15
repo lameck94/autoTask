@@ -79,9 +79,9 @@
 </head>
 <body>
     <h1>Tasklist</h1>
-    <p class="datetime">Current Date and Time: {{ current_time }}</p> <!-- This already includes the date -->
-    <input type="file" id="fileInput" accept=".xlsx" />
-    <button onclick="uploadFile()">Upload File</button>
+    <p class="datetime">Current Date and Time: {{ current_time }}</p>
+    <input type="file" id="fileInput" accept=".xlsx" style="display: none;" onchange="uploadFile()" />
+    <button onclick="document.getElementById('fileInput').click()">Choose and Upload File</button>
     <button onclick="window.location.href='/export_csv'">Export to CSV</button>
     <table>
         <tr>
@@ -93,11 +93,11 @@
         </tr>
         {% for name in zero_days_counts.keys() %}
         <tr>
-            <td class="{{ 'red' if zero_days_counts.get(name, 0) > 0 else '' }}">{{ name }}</td>
-            <td class="{{ 'red' if zero_days_counts.get(name, 0) > 0 else '' }}">{{ zero_days_counts.get(name, 0) }}</td>
-            <td class="{{ 'red' if zero_to_three_days_counts.get(name, 0) >= 8 else '' }}">{{ zero_to_three_days_counts.get(name, 0) }}</td> <!-- Updated condition -->
-            <td class="{{ 'red' if zero_to_five_days_counts.get(name, 0) > 8 else '' }}">{{ zero_to_five_days_counts.get(name, 0) }}</td>
-            <td class="{{ 'red' if zero_to_seven_days_counts.get(name, 0) > 20 else '' }}">{{ zero_to_seven_days_counts.get(name, 0) }}</td>
+            <td class="{{ 'red' if zero_days_counts.get(name, 0) > 0 else '' }}" onclick="copyText('{{ name }}')">{{ name }}</td>
+            <td class="{{ 'red' if zero_days_counts.get(name, 0) > 0 else '' }}" onclick="copyText('{{ zero_days_counts.get(name, 0) }}')">{{ zero_days_counts.get(name, 0) }}</td>
+            <td class="{{ 'red' if zero_to_three_days_counts.get(name, 0) >= 8 else '' }}" onclick="copyText('{{ zero_to_three_days_counts.get(name, 0) }}')">{{ zero_to_three_days_counts.get(name, 0) }}</td>
+            <td class="{{ 'red' if zero_to_five_days_counts.get(name, 0) > 8 else '' }}" onclick="copyText('{{ zero_to_five_days_counts.get(name, 0) }}')">{{ zero_to_five_days_counts.get(name, 0) }}</td>
+            <td class="{{ 'red' if zero_to_seven_days_counts.get(name, 0) > 20 else '' }}" onclick="copyText('{{ zero_to_seven_days_counts.get(name, 0) }}')">{{ zero_to_seven_days_counts.get(name, 0) }}</td>
         </tr>
         {% endfor %}
     </table>
@@ -126,6 +126,14 @@
             } else {
                 alert('Please select a file to upload');
             }
+        }
+
+        function copyText(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Copied to clipboard: ' + text);
+            }).catch(err => {
+                console.error('Failed to copy text: ', err);
+            });
         }
     </script>
 </body>
