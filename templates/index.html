@@ -79,42 +79,62 @@
 </head>
 <body>
     <h1>Tasklist</h1>
-    <p class="datetime">Current Date and Time: {{ current_time }}</p>
+    <!-- Remove the date and time paragraph -->
     <input type="file" id="fileInput" accept=".xlsx" style="display: none;" onchange="uploadFile()" />
-    <button onclick="document.getElementById('fileInput').click()">Choose and Upload File</button>
-    <button onclick="window.location.href='/export_csv'">Export to CSV</button>
+    <button onclick="document.getElementById('fileInput').click()">Choose File</button>
+    <button onclick="exportCSV()">Export to CSV</button>
+    <div id="loadingIndicator" style="display: none; text-align: center; margin-top: 20px;">Loading...</div>
+    <script>
+        function exportCSV() {
+            // Show loading indicator
+            document.getElementById('loadingIndicator').style.display = 'block';
+    
+            fetch('/export_csv')
+                .then(response => {
+                    // Hide loading indicator
+                    document.getElementById('loadingIndicator').style.display = 'none';
+    
+                    if (response.ok) {
+                        return response.blob();
+                    } else {
+                        throw new Error('CSV export failed');
+                    }
+                })
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'mtsr_counts.csv';
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    // Hide loading indicator
+                    document.getElementById('loadingIndicator').style.display = 'none';
+                });
+        }
+    </script>
     <table>
         <tr>
-            <th>Sector</th>
             <th>M/TSR Name</th>
             <th>0 Days</th>
             <th>0-3 Days</th>
             <th>0-5 Days</th>
             <th>0-7 Days</th>
         </tr>
-        {% for sector, records in sector_names.items() %}
-        {% for record in records %}
+        {% for name in zero_days_counts.keys() %}
         <tr>
-            {% if loop.first %}
-            <td rowspan="{{ records|length + 1 }}">{{ sector }}</td>
-            {% endif %}
-            <td>{{ record['M/TSR Name'] }}</td>
-            <td>{{ zero_days_counts[record['M/TSR Name']] }}</td>
-            <td>{{ zero_to_three_days_counts[record['M/TSR Name']] }}</td>
-            <td>{{ zero_to_five_days_counts[record['M/TSR Name']] }}</td>
-            <td>{{ zero_to_seven_days_counts[record['M/TSR Name']] }}</td>
+            <td class="{{ 'red' if zero_days_counts.get(name, 0) > 0 else '' }}" onclick="copyText('{{ name }}')">{{ name }}</td>
+            <td class="{{ 'red' if zero_days_counts.get(name, 0) > 0 else '' }}" onclick="copyText('{{ zero_days_counts.get(name, 0) }}')">{{ zero_days_counts.get(name, 0) }}</td>
+            <td class="{{ 'red' if zero_to_three_days_counts.get(name, 0) >= 8 else '' }}" onclick="copyText('{{ zero_to_three_days_counts.get(name, 0) }}')">{{ zero_to_three_days_counts.get(name, 0) }}</td>
+            <td class="{{ 'red' if zero_to_five_days_counts.get(name, 0) > 8 else '' }}" onclick="copyText('{{ zero_to_five_days_counts.get(name, 0) }}')">{{ zero_to_five_days_counts.get(name, 0) }}</td>
+            <td class="{{ 'red' if zero_to_seven_days_counts.get(name, 0) > 20 else '' }}" onclick="copyText('{{ zero_to_seven_days_counts.get(name, 0) }}')">{{ zero_to_seven_days_counts.get(name, 0) }}</td>
         </tr>
         {% endfor %}
         <tr>
-            <td colspan="2"><strong>Subtotal for {{ sector }}</strong></td>
-            <td>{{ sector_totals[sector]['0 Days'] }}</td>
-            <td>{{ sector_totals[sector]['0-3 Days'] }}</td>
-            <td>{{ sector_totals[sector]['0-5 Days'] }}</td>
-            <td>{{ sector_totals[sector]['0-7 Days'] }}</td>
-        </tr>
-        {% endfor %}
-        <tr>
-            <td colspan="2"><strong>Grand Total</strong></td>
+            <td><strong>Grand Total</strong></td>
             <td>{{ grand_totals['0 Days'] }}</td>
             <td>{{ grand_totals['0-3 Days'] }}</td>
             <td>{{ grand_totals['0-5 Days'] }}</td>
@@ -129,12 +149,18 @@
                 const formData = new FormData();
                 formData.append('file', file);
 
+                // Show loading indicator
+                document.getElementById('loadingIndicator').style.display = 'block';
+
                 fetch('/upload', {
                     method: 'POST',
                     body: formData
                 })
                 .then(response => response.json())
                 .then(data => {
+                    // Hide loading indicator
+                    document.getElementById('loadingIndicator').style.display = 'none';
+
                     if (data.success) {
                         alert('File uploaded successfully');
                         window.location.reload();
@@ -142,7 +168,11 @@
                         alert('File upload failed');
                     }
                 })
-                .catch(error => console.error('Error:', error));
+                .catch(error => {
+                    console.error('Error:', error);
+                    // Hide loading indicator
+                    document.getElementById('loadingIndicator').style.display = 'none';
+                });
             } else {
                 alert('Please select a file to upload');
             }
