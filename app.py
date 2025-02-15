@@ -19,37 +19,65 @@ def show_days_counts():
             # If there's an error, fall back to sheet 0
             data = pd.read_excel(uploaded_file_path, sheet_name=0)
 
+        # Fill any NaN values with 0
+        data = data.fillna(0)
+
+        # Define the sector mapping
+        sector_mapping = {
+            "Wangige": ["sarah gitonga", "dorcas chepkurui", "mwaniki nyakio", "veronicah parmeti", "peter kiteme"],
+            "Gachie": ["bravin sungu", "george mungai", "mohamud mohamed", "paul njuguna", "shaquille mungala"],
+            "Banana": ["idah gachanja", "mary gakuu", "michael njambi", "moffat kihara", "mwangi godfrey", "raphael kalumi"],
+            "Ruaka": ["edward githii", "emmanuel otieno", "nancy ndoti", "tabitha chege"]
+        }
+
+        # Map M/TSR Names to sectors
+        data['Sector'] = data['M/TSR Name'].apply(lambda name: next((sector for sector, names in sector_mapping.items() if name.lower() in names), "Unknown"))
+
         # Get all unique M/TSR Names
         all_mtsr_names = data['M/TSR Name'].unique()
 
-        # Filter the data for entries with "0 days"
-        zero_days_data = data[data['Days to no Cooking'] == 0]
+        # Calculate counts and ensure all names are included with a default count of 0
+        zero_days_counts = {name: 0 for name in all_mtsr_names}
+        zero_days_counts.update(data[data['Days to no Cooking'] == 0]['M/TSR Name'].value_counts().to_dict())
 
-        # Count the number of entries for each "M/TSR Name" with "0 days"
-        zero_days_counts = zero_days_data['M/TSR Name'].value_counts().to_dict()
+        zero_to_three_days_counts = {name: 0 for name in all_mtsr_names}
+        zero_to_three_days_counts.update(data[data['Days to no Cooking'] <= 3]['M/TSR Name'].value_counts().to_dict())
 
-        # Ensure all names are included with a default count of 0
-        zero_days_counts = {name: zero_days_counts.get(name, 0) for name in all_mtsr_names}
+        zero_to_five_days_counts = {name: 0 for name in all_mtsr_names}
+        zero_to_five_days_counts.update(data[data['Days to no Cooking'] <= 5]['M/TSR Name'].value_counts().to_dict())
 
-        # Filter and count for "0-3 days"
-        zero_to_three_days_data = data[data['Days to no Cooking'] <= 3]
-        zero_to_three_days_counts = zero_to_three_days_data['M/TSR Name'].value_counts().to_dict()
+        zero_to_seven_days_counts = {name: 0 for name in all_mtsr_names}
+        zero_to_seven_days_counts.update(data[data['Days to no Cooking'] <= 7]['M/TSR Name'].value_counts().to_dict())
 
-        # Filter and count for "0-5 days"
-        zero_to_five_days_data = data[data['Days to no Cooking'] <= 5]
-        zero_to_five_days_counts = zero_to_five_days_data['M/TSR Name'].value_counts().to_dict()
-
-        # Filter and count for "0-7 days"
-        zero_to_seven_days_data = data[data['Days to no Cooking'] <= 7]
-        zero_to_seven_days_counts = zero_to_seven_days_data['M/TSR Name'].value_counts().to_dict()
+        # Prepare data for rendering
+        sector_names = {}
+        sector_totals = {}
+        grand_totals = {'0 Days': 0, '0-3 Days': 0, '0-5 Days': 0, '0-7 Days': 0}
+        for sector, names in sector_mapping.items():
+            sector_data = data[data['Sector'] == sector]
+            sector_names[sector] = sector_data.to_dict('records')
+            sector_totals[sector] = {
+                '0 Days': sector_data['Days to no Cooking'].eq(0).sum(),
+                '0-3 Days': sector_data['Days to no Cooking'].le(3).sum(),
+                '0-5 Days': sector_data['Days to no Cooking'].le(5).sum(),
+                '0-7 Days': sector_data['Days to no Cooking'].le(7).sum()
+            }
+            # Calculate grand totals
+            grand_totals['0 Days'] += sector_totals[sector]['0 Days']
+            grand_totals['0-3 Days'] += sector_totals[sector]['0-3 Days']
+            grand_totals['0-5 Days'] += sector_totals[sector]['0-5 Days']
+            grand_totals['0-7 Days'] += sector_totals[sector]['0-7 Days']
 
         return render_template('index.html', 
                                zero_days_counts=zero_days_counts,
-                               zero_to_five_days_counts=zero_to_five_days_counts,
                                zero_to_three_days_counts=zero_to_three_days_counts,
-                               zero_to_seven_days_counts=zero_to_seven_days_counts)
+                               zero_to_five_days_counts=zero_to_five_days_counts,
+                               zero_to_seven_days_counts=zero_to_seven_days_counts,
+                               sector_names=sector_names, 
+                               sector_totals=sector_totals,
+                               grand_totals=grand_totals)
     else:
-        return render_template('index.html', zero_days_counts={}, zero_to_five_days_counts={}, zero_to_three_days_counts={}, zero_to_seven_days_counts={})
+        return render_template('index.html', zero_days_counts={}, zero_to_three_days_counts={}, zero_to_five_days_counts={}, zero_to_seven_days_counts={}, sector_names={}, sector_totals={}, grand_totals={})
 
 @app.route('/upload', methods=['POST'])
 def upload_file():

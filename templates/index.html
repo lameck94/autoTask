@@ -85,21 +85,41 @@
     <button onclick="window.location.href='/export_csv'">Export to CSV</button>
     <table>
         <tr>
+            <th>Sector</th>
             <th>M/TSR Name</th>
             <th>0 Days</th>
             <th>0-3 Days</th>
             <th>0-5 Days</th>
             <th>0-7 Days</th>
         </tr>
-        {% for name in zero_days_counts.keys() %}
+        {% for sector, records in sector_names.items() %}
+        {% for record in records %}
         <tr>
-            <td class="{{ 'red' if zero_days_counts.get(name, 0) > 0 else '' }}" onclick="copyText('{{ name }}')">{{ name }}</td>
-            <td class="{{ 'red' if zero_days_counts.get(name, 0) > 0 else '' }}" onclick="copyText('{{ zero_days_counts.get(name, 0) }}')">{{ zero_days_counts.get(name, 0) }}</td>
-            <td class="{{ 'red' if zero_to_three_days_counts.get(name, 0) >= 8 else '' }}" onclick="copyText('{{ zero_to_three_days_counts.get(name, 0) }}')">{{ zero_to_three_days_counts.get(name, 0) }}</td>
-            <td class="{{ 'red' if zero_to_five_days_counts.get(name, 0) > 8 else '' }}" onclick="copyText('{{ zero_to_five_days_counts.get(name, 0) }}')">{{ zero_to_five_days_counts.get(name, 0) }}</td>
-            <td class="{{ 'red' if zero_to_seven_days_counts.get(name, 0) > 20 else '' }}" onclick="copyText('{{ zero_to_seven_days_counts.get(name, 0) }}')">{{ zero_to_seven_days_counts.get(name, 0) }}</td>
+            {% if loop.first %}
+            <td rowspan="{{ records|length + 1 }}">{{ sector }}</td>
+            {% endif %}
+            <td>{{ record['M/TSR Name'] }}</td>
+            <td>{{ zero_days_counts[record['M/TSR Name']] }}</td>
+            <td>{{ zero_to_three_days_counts[record['M/TSR Name']] }}</td>
+            <td>{{ zero_to_five_days_counts[record['M/TSR Name']] }}</td>
+            <td>{{ zero_to_seven_days_counts[record['M/TSR Name']] }}</td>
         </tr>
         {% endfor %}
+        <tr>
+            <td colspan="2"><strong>Subtotal for {{ sector }}</strong></td>
+            <td>{{ sector_totals[sector]['0 Days'] }}</td>
+            <td>{{ sector_totals[sector]['0-3 Days'] }}</td>
+            <td>{{ sector_totals[sector]['0-5 Days'] }}</td>
+            <td>{{ sector_totals[sector]['0-7 Days'] }}</td>
+        </tr>
+        {% endfor %}
+        <tr>
+            <td colspan="2"><strong>Grand Total</strong></td>
+            <td>{{ grand_totals['0 Days'] }}</td>
+            <td>{{ grand_totals['0-3 Days'] }}</td>
+            <td>{{ grand_totals['0-5 Days'] }}</td>
+            <td>{{ grand_totals['0-7 Days'] }}</td>
+        </tr>
     </table>
     <script>
         function uploadFile() {
