@@ -180,5 +180,10 @@ def export_to_csv():
 
     return jsonify(success=False)
 
+@app.route('/download_visits')
+def download_visits():
+    directory = os.path.join(app.root_path, 'path/to/visits')  # Update with the correct path
+    return send_from_directory(directory, 'visits.py', as_attachment=True)
+
 if __name__ == '__main__':
     app.run(debug=True, port=5001)

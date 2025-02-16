@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visits Report</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+            background: linear-gradient(135deg, #e0f7fa 0%, #e1bee7 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 900px;
+        }
+        h1 {
+            text-align: center;
+            color: #4a148c;
+            margin-bottom: 40px;
+            font-size: 2.5em;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+        .form-container {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin-bottom: 35px;
+        }
+        input[type="file"] {
+            padding: 12px;
+            border: 2px solid #b39ddb;
+            border-radius: 8px;
+            background: #f3e5f5;
+            transition: all 0.3s ease;
+        }
+        input[type="file"]:hover {
+            border-color: #7e57c2;
+            background: #fff;
+        }
+        button {
+            padding: 12px 25px;
+            background: linear-gradient(45deg, #7e57c2, #5e35b1);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(126, 87, 194, 0.2);
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(126, 87, 194, 0.3);
+        }
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin: 25px 0;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        th, td {
+            padding: 18px;
+            text-align: center;
+            border-bottom: 1px solid #d1c4e9;
+        }
+        th {
+            background: linear-gradient(45deg, #7e57c2, #5e35b1);
+            color: white;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.95em;
+        }
+        tr:hover {
+            background-color: #f3e5f5;
+            transition: background-color 0.3s ease;
+        }
+        tr:last-child {
+            font-weight: 600;
+            background: #ede7f6;
+            color: #4a148c;
+        }
+        tr:last-child:hover {
+            background: #ede7f6;
+        }
+        p {
+            text-align: center;
+            font-size: 1.2em;
+            color: #4a148c;
+            margin: 25px 0;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Visits Report</h1>
+        <div class="form-container">
+            <form id="uploadForm" method="post" enctype="multipart/form-data">
+                <input type="file" name="file" id="fileInput" onchange="document.getElementById('uploadForm').submit();">
+            </form>
+            {% if show_export %}
+            <form action="{{ url_for('export') }}" method="get">
+                <button type="submit">Export to CSV</button>
+            </form>
+            {% endif %}
+        </div>
+        {% if row_count > 0 %}
+        <p>Staff present: {{ row_count }}</p>
+        {% endif %}
+        {{ html_table|safe }}
+    </div>
+</body>
+</html>
